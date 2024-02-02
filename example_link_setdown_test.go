@@ -25,7 +25,7 @@ func Example_setLinkDown() {
 		log.Fatal(err)
 	}
 
-	state := msg.Attributes.OperationalState
+	state := *msg.Attributes.OperationalState
 	// If the link is already down, return immediately
 	if state == rtnetlink.OperStateDown {
 		return

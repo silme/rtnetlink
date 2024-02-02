@@ -198,30 +198,30 @@ func (l *LinkService) List() ([]LinkMessage, error) {
 
 // LinkAttributes contains all attributes for an interface.
 type LinkAttributes struct {
-	Address          net.HardwareAddr // Interface L2 address
-	Alias            *string          // Interface alias name
-	Broadcast        net.HardwareAddr // L2 broadcast address
-	Carrier          *uint8           // Current physical link state of the interface.
-	CarrierChanges   *uint32          // Number of times the link has seen a change from UP to DOWN and vice versa
-	CarrierUpCount   *uint32          // Number of times the link has been up
-	CarrierDownCount *uint32          // Number of times the link has been down
-	Index            *uint32          // System-wide interface unique index identifier
-	Info             *LinkInfo        // Detailed Interface Information
-	LinkMode         *uint8           // Interface link mode
-	MTU              uint32           // MTU of the device
-	Name             string           // Device name
-	NetDevGroup      *uint32          // Interface network device group
-	OperationalState OperationalState // Interface operation state
-	PhysPortID       *string          // Interface unique physical port identifier within the NIC
-	PhysPortName     *string          // Interface physical port name within the NIC
-	PhysSwitchID     *string          // Unique physical switch identifier of a switch this port belongs to
-	QueueDisc        string           // Queueing discipline
-	Master           *uint32          // Master device index (0 value un-enslaves)
-	Stats            *LinkStats       // Interface Statistics
-	Stats64          *LinkStats64     // Interface Statistics (64 bits version)
-	TxQueueLen       *uint32          // Interface transmit queue len in number of packets
-	Type             uint32           // Link type
-	XDP              *LinkXDP         // Express Data Patch Information
+	Address          net.HardwareAddr  // Interface L2 address
+	Alias            *string           // Interface alias name
+	Broadcast        net.HardwareAddr  // L2 broadcast address
+	Carrier          *uint8            // Current physical link state of the interface.
+	CarrierChanges   *uint32           // Number of times the link has seen a change from UP to DOWN and vice versa
+	CarrierUpCount   *uint32           // Number of times the link has been up
+	CarrierDownCount *uint32           // Number of times the link has been down
+	Index            *uint32           // System-wide interface unique index identifier
+	Info             *LinkInfo         // Detailed Interface Information
+	LinkMode         *uint8            // Interface link mode
+	MTU              *uint32           // MTU of the device
+	Name             *string           // Device name
+	NetDevGroup      *uint32           // Interface network device group
+	OperationalState *OperationalState // Interface operation state
+	PhysPortID       *string           // Interface unique physical port identifier within the NIC
+	PhysPortName     *string           // Interface physical port name within the NIC
+	PhysSwitchID     *string           // Unique physical switch identifier of a switch this port belongs to
+	QueueDisc        *string           // Queueing discipline
+	Master           *uint32           // Master device index (0 value un-enslaves)
+	Stats            *LinkStats        // Interface Statistics
+	Stats64          *LinkStats64      // Interface Statistics (64 bits version)
+	TxQueueLen       *uint32           // Interface transmit queue len in number of packets
+	Type             *uint32           // Link type
+	XDP              *LinkXDP          // Express Data Patch Information
 }
 
 // OperationalState represents an interface's operational state.
@@ -277,11 +277,14 @@ func (a *LinkAttributes) decode(ad *netlink.AttributeDecoder) error {
 			v := ad.Uint32()
 			a.NetDevGroup = &v
 		case unix.IFLA_MTU:
-			a.MTU = ad.Uint32()
+			v := ad.Uint32()
+			a.MTU = &v
 		case unix.IFLA_IFNAME:
-			a.Name = ad.String()
+			v := ad.String()
+			a.Name = &v
 		case unix.IFLA_LINK:
-			a.Type = ad.Uint32()
+			v := ad.Uint32()
+			a.Type = &v
 		case unix.IFLA_LINKINFO:
 			a.Info = &LinkInfo{}
 			ad.Nested(a.Info.decode)
@@ -292,7 +295,8 @@ func (a *LinkAttributes) decode(ad *netlink.AttributeDecoder) error {
 			v := ad.Uint32()
 			a.Master = &v
 		case unix.IFLA_OPERSTATE:
-			a.OperationalState = OperationalState(ad.Uint8())
+			v := OperationalState(ad.Uint8())
+			a.OperationalState = &v
 		case unix.IFLA_PHYS_PORT_ID:
 			v := ad.String()
 			a.PhysPortID = &v
@@ -303,7 +307,8 @@ func (a *LinkAttributes) decode(ad *netlink.AttributeDecoder) error {
 			v := ad.String()
 			a.PhysPortName = &v
 		case unix.IFLA_QDISC:
-			a.QueueDisc = ad.String()
+			v := ad.String()
+			a.QueueDisc = &v
 		case unix.IFLA_STATS:
 			a.Stats = &LinkStats{}
 			err := a.Stats.unmarshalBinary(ad.Bytes())
@@ -330,13 +335,20 @@ func (a *LinkAttributes) decode(ad *netlink.AttributeDecoder) error {
 
 // MarshalBinary marshals a LinkAttributes into a byte slice.
 func (a *LinkAttributes) encode(ae *netlink.AttributeEncoder) error {
-	ae.Uint16(unix.IFLA_UNSPEC, 0)
-	ae.String(unix.IFLA_IFNAME, a.Name)
-	ae.Uint32(unix.IFLA_LINK, a.Type)
-	ae.String(unix.IFLA_QDISC, a.QueueDisc)
+	if a.Name != nil {
+		ae.String(unix.IFLA_IFNAME, *a.Name)
+	}
 
-	if a.MTU != 0 {
-		ae.Uint32(unix.IFLA_MTU, a.MTU)
+	if a.Type != nil {
+		ae.Uint32(unix.IFLA_LINK, *a.Type)
+	}
+
+	if a.QueueDisc != nil {
+		ae.String(unix.IFLA_QDISC, *a.QueueDisc)
+	}
+
+	if a.MTU != nil {
+		ae.Uint32(unix.IFLA_MTU, *a.MTU)
 	}
 
 	if len(a.Address) != 0 {
@@ -347,8 +359,8 @@ func (a *LinkAttributes) encode(ae *netlink.AttributeEncoder) error {
 		ae.Bytes(unix.IFLA_BROADCAST, a.Broadcast)
 	}
 
-	if a.OperationalState != OperStateUnknown {
-		ae.Uint8(unix.IFLA_OPERSTATE, uint8(a.OperationalState))
+	if a.OperationalState != nil {
+		ae.Uint8(unix.IFLA_OPERSTATE, uint8(*a.OperationalState))
 	}
 
 	if a.Info != nil {

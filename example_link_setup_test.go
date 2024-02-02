@@ -29,7 +29,7 @@ func Example_setLinkUp() {
 		log.Fatal(err)
 	}
 
-	state := msg.Attributes.OperationalState
+	state := *msg.Attributes.OperationalState
 	// If the link is already up, return immediately
 	if state == rtnetlink.OperStateUp || state == rtnetlink.OperStateUnknown {
 		return

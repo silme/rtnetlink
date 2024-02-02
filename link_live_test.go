@@ -50,7 +50,7 @@ func SetupDummyInterface(conn *Conn, name string) (*LinkMessage, error) {
 		Index:  1001,
 		Flags:  unix.IFF_UP,
 		Attributes: &LinkAttributes{
-			Name: name,
+			Name: &name,
 			Info: &LinkInfo{Kind: "dummy"},
 		},
 	}); err != nil {

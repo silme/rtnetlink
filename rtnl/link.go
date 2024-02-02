@@ -33,8 +33,8 @@ func (c *Conn) LinkByIndex(ifindex int) (*net.Interface, error) {
 func linkmsgToInterface(m *rtnetlink.LinkMessage) *net.Interface {
 	ifc := &net.Interface{
 		Index:        int(m.Index),
-		MTU:          int(m.Attributes.MTU),
-		Name:         m.Attributes.Name,
+		MTU:          int(*m.Attributes.MTU),
+		Name:         *m.Attributes.Name,
 		HardwareAddr: m.Attributes.Address,
 		Flags:        linkFlags(m.Flags),
 	}

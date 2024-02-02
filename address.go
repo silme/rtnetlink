@@ -150,14 +150,14 @@ func (a *AddressService) List() ([]AddressMessage, error) {
 
 // AddressAttributes contains all attributes for an interface.
 type AddressAttributes struct {
-	Address   net.IP // Interface Ip address
-	Local     net.IP // Local Ip address
-	Label     string
-	Broadcast net.IP    // Broadcast Ip address
-	Anycast   net.IP    // Anycast Ip address
-	CacheInfo CacheInfo // Address information
-	Multicast net.IP    // Multicast Ip address
-	Flags     uint32    // Address flags
+	Address   net.IP     // Interface Ip address
+	Local     net.IP     // Local Ip address
+	Label     *string    // Name of the interface
+	Broadcast net.IP     // Broadcast Ip address
+	Anycast   net.IP     // Anycast Ip address
+	CacheInfo *CacheInfo // Address information
+	Multicast net.IP     // Multicast Ip address
+	Flags     *uint32    // Address flags
 }
 
 func (a *AddressAttributes) decode(ad *netlink.AttributeDecoder) error {
@@ -170,17 +170,20 @@ func (a *AddressAttributes) decode(ad *netlink.AttributeDecoder) error {
 		case unix.IFA_LOCAL:
 			ad.Do(decodeIP(&a.Local))
 		case unix.IFA_LABEL:
-			a.Label = ad.String()
+			v := ad.String()
+			a.Label = &v
 		case unix.IFA_BROADCAST:
 			ad.Do(decodeIP(&a.Broadcast))
 		case unix.IFA_ANYCAST:
 			ad.Do(decodeIP(&a.Anycast))
 		case unix.IFA_CACHEINFO:
+			a.CacheInfo = &CacheInfo{}
 			ad.Do(a.CacheInfo.decode)
 		case unix.IFA_MULTICAST:
 			ad.Do(decodeIP(&a.Multicast))
 		case unix.IFA_FLAGS:
-			a.Flags = ad.Uint32()
+			v := ad.Uint32()
+			a.Flags = &v
 		}
 	}
 
@@ -188,7 +191,6 @@ func (a *AddressAttributes) decode(ad *netlink.AttributeDecoder) error {
 }
 
 func (a *AddressAttributes) encode(ae *netlink.AttributeEncoder) error {
-	ae.Uint16(unix.IFA_UNSPEC, 0)
 	ae.Do(unix.IFA_ADDRESS, encodeIP(a.Address))
 	if a.Local != nil {
 		ae.Do(unix.IFA_LOCAL, encodeIP(a.Local))
@@ -202,10 +204,12 @@ func (a *AddressAttributes) encode(ae *netlink.AttributeEncoder) error {
 	if a.Multicast != nil {
 		ae.Do(unix.IFA_MULTICAST, encodeIP(a.Multicast))
 	}
-	if a.Label != "" {
-		ae.String(unix.IFA_LABEL, a.Label)
+	if a.Label != nil {
+		ae.String(unix.IFA_LABEL, *a.Label)
 	}
-	ae.Uint32(unix.IFA_FLAGS, a.Flags)
+	if a.Flags != nil {
+		ae.Uint32(unix.IFA_FLAGS, *a.Flags)
+	}
 
 	return nil
 }

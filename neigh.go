@@ -173,7 +173,7 @@ type NeighAttributes struct {
 	Address   net.IP           // a neighbor cache n/w layer destination address
 	LLAddress net.HardwareAddr // a neighbor cache link layer address
 	CacheInfo *NeighCacheInfo  // cache statistics
-	IfIndex   uint32
+	IfIndex   *uint32
 }
 
 func (a *NeighAttributes) decode(ad *netlink.AttributeDecoder) error {
@@ -199,7 +199,8 @@ func (a *NeighAttributes) decode(ad *netlink.AttributeDecoder) error {
 				return err
 			}
 		case unix.NDA_IFINDEX:
-			a.IfIndex = ad.Uint32()
+			v := ad.Uint32()
+			a.IfIndex = &v
 		}
 	}
 
@@ -207,10 +208,11 @@ func (a *NeighAttributes) decode(ad *netlink.AttributeDecoder) error {
 }
 
 func (a *NeighAttributes) encode(ae *netlink.AttributeEncoder) error {
-	ae.Uint16(unix.NDA_UNSPEC, 0)
 	ae.Bytes(unix.NDA_DST, a.Address)
 	ae.Bytes(unix.NDA_LLADDR, a.LLAddress)
-	ae.Uint32(unix.NDA_IFINDEX, a.IfIndex)
+	if a.IfIndex != nil {
+		ae.Uint32(unix.NDA_IFINDEX, *a.IfIndex)
+	}
 
 	return nil
 }

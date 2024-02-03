@@ -163,7 +163,7 @@ func (r *RuleService) List() ([]RuleMessage, error) {
 
 // RuleAttributes contains all attributes for a rule.
 type RuleAttributes struct {
-	Src, Dst          *net.IP
+	Src, Dst          net.IP
 	IIFName, OIFName  *string
 	Goto              *uint32
 	Priority          *uint32
@@ -190,11 +190,9 @@ func (r *RuleAttributes) decode(ad *netlink.AttributeDecoder) error {
 			// unused
 			continue
 		case unix.FRA_DST:
-			r.Dst = &net.IP{}
-			ad.Do(decodeIP(r.Dst))
+			ad.Do(decodeIP(&r.Dst))
 		case unix.FRA_SRC:
-			r.Src = &net.IP{}
-			ad.Do(decodeIP(r.Src))
+			ad.Do(decodeIP(&r.Src))
 		case unix.FRA_IIFNAME:
 			v := ad.String()
 			r.IIFName = &v
@@ -292,10 +290,10 @@ func (r *RuleAttributes) encode(ae *netlink.AttributeEncoder) error {
 		ae.Uint8(unix.FRA_PROTOCOL, *r.Protocol)
 	}
 	if r.Src != nil {
-		ae.Do(unix.FRA_SRC, encodeIP(*r.Src))
+		ae.Do(unix.FRA_SRC, encodeIP(r.Src))
 	}
 	if r.Dst != nil {
-		ae.Do(unix.FRA_DST, encodeIP(*r.Dst))
+		ae.Do(unix.FRA_DST, encodeIP(r.Dst))
 	}
 	if r.IIFName != nil {
 		ae.String(unix.FRA_IIFNAME, *r.IIFName)

@@ -43,8 +43,8 @@ func TestRuleMessage(t *testing.T) {
 				Action:    2,
 				Flags:     1,
 				Attributes: &RuleAttributes{
-					Src:               netIPPtr(net.ParseIP("8.8.8.8")),
-					Dst:               netIPPtr(net.ParseIP("1.1.1.1")),
+					Src:               net.ParseIP("8.8.8.8").To4(),
+					Dst:               net.ParseIP("1.1.1.1").To4(),
 					IIFName:           strPtr("eth0"),
 					OIFName:           strPtr("br0"),
 					Goto:              uint32Ptr(1),
@@ -182,16 +182,6 @@ func uint16Ptr(v uint16) *uint16 {
 }
 
 func uint8Ptr(v uint8) *uint8 {
-	return &v
-}
-
-func netIPPtr(v net.IP) *net.IP {
-	if ip4 := v.To4(); ip4 != nil {
-		// By default net.IP returns the 16 byte representation.
-		// But netlink requires us to provide only four bytes
-		// for legacy IPs.
-		return &ip4
-	}
 	return &v
 }
 

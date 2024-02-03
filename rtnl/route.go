@@ -89,10 +89,11 @@ func (c *Conn) RouteDel(ifc *net.Interface, dst net.IPNet) error {
 	if err != nil {
 		return err
 	}
+	ifi := uint32(ifc.Index)
 	prefixlen, _ := dst.Mask.Size()
 	attr := rtnetlink.RouteAttributes{
 		Dst:      dst.IP,
-		OutIface: uint32(ifc.Index),
+		OutIface: &ifi,
 	}
 	tx := &rtnetlink.RouteMessage{
 		Family:     uint8(af),
@@ -140,7 +141,7 @@ func (c *Conn) RouteGetAll(dst net.IP) (ret []*Route, err error) {
 	}
 
 	for _, rt := range rx {
-		ifindex := int(rt.Attributes.OutIface)
+		ifindex := int(*rt.Attributes.OutIface)
 
 		iface, err := c.LinkByIndex(ifindex)
 		if err != nil {
@@ -156,7 +157,7 @@ func (c *Conn) RouteGetAll(dst net.IP) (ret []*Route, err error) {
 			Destination: dstNet,
 			Gateway:     rt.Attributes.Gateway,
 			Interface:   iface,
-			Metric:      rt.Attributes.Priority,
+			Metric:      *rt.Attributes.Priority,
 		})
 	}
 

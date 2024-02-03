@@ -17,11 +17,12 @@ type RouteOption func(*RouteOptions)
 
 // DefaultRouteOptions defines the default route options.
 func DefaultRouteOptions(ifc *net.Interface, dst net.IPNet, gw net.IP) *RouteOptions {
+	ifi := uint32(ifc.Index)
 	ro := &RouteOptions{
 		Src: nil,
 		Attrs: rtnetlink.RouteAttributes{
 			Dst:      dst.IP,
-			OutIface: uint32(ifc.Index),
+			OutIface: &ifi,
 		},
 	}
 

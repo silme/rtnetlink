@@ -27,9 +27,10 @@ func Example_addRoute() {
 	}
 	defer conn.Close()
 
+	ifi := uint32(iface.Index)
 	attr := rtnetlink.RouteAttributes{
 		Dst:      dst.IP,
-		OutIface: uint32(iface.Index),
+		OutIface: &ifi,
 	}
 	if gw == nil {
 		attr.Gateway = gw

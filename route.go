@@ -158,10 +158,10 @@ type RouteAttributes struct {
 	Dst       net.IP
 	Src       net.IP
 	Gateway   net.IP
-	OutIface  uint32
-	Priority  uint32
-	Table     uint32
-	Mark      uint32
+	OutIface  *uint32
+	Priority  *uint32
+	Table     *uint32
+	Mark      *uint32
 	Pref      *uint8
 	Expires   *uint32
 	Metrics   *RouteMetrics
@@ -180,13 +180,17 @@ func (a *RouteAttributes) decode(ad *netlink.AttributeDecoder) error {
 		case unix.RTA_GATEWAY:
 			ad.Do(decodeIP(&a.Gateway))
 		case unix.RTA_OIF:
-			a.OutIface = ad.Uint32()
+			v := ad.Uint32()
+			a.OutIface = &v
 		case unix.RTA_PRIORITY:
-			a.Priority = ad.Uint32()
+			v := ad.Uint32()
+			a.Priority = &v
 		case unix.RTA_TABLE:
-			a.Table = ad.Uint32()
+			v := ad.Uint32()
+			a.Table = &v
 		case unix.RTA_MARK:
-			a.Mark = ad.Uint32()
+			v := ad.Uint32()
+			a.Mark = &v
 		case unix.RTA_EXPIRES:
 			timeout := ad.Uint32()
 			a.Expires = &timeout
@@ -217,20 +221,20 @@ func (a *RouteAttributes) encode(ae *netlink.AttributeEncoder) error {
 		ae.Do(unix.RTA_GATEWAY, encodeIP(a.Gateway))
 	}
 
-	if a.OutIface != 0 {
-		ae.Uint32(unix.RTA_OIF, a.OutIface)
+	if a.OutIface != nil {
+		ae.Uint32(unix.RTA_OIF, *a.OutIface)
 	}
 
-	if a.Priority != 0 {
-		ae.Uint32(unix.RTA_PRIORITY, a.Priority)
+	if a.Priority != nil {
+		ae.Uint32(unix.RTA_PRIORITY, *a.Priority)
 	}
 
-	if a.Table != 0 {
-		ae.Uint32(unix.RTA_TABLE, a.Table)
+	if a.Table != nil {
+		ae.Uint32(unix.RTA_TABLE, *a.Table)
 	}
 
-	if a.Mark != 0 {
-		ae.Uint32(unix.RTA_MARK, a.Mark)
+	if a.Mark != nil {
+		ae.Uint32(unix.RTA_MARK, *a.Mark)
 	}
 
 	if a.Pref != nil {

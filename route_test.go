@@ -16,6 +16,10 @@ func TestRouteMessageMarshalUnmarshalBinary(t *testing.T) {
 	var (
 		timeout = uint32(255)
 		pref    = uint8(1)
+		out     = uint32(5)
+		prio    = uint32(1)
+		table   = uint32(2)
+		mark    = uint32(3)
 	)
 
 	tests := []struct {
@@ -56,10 +60,10 @@ func TestRouteMessageMarshalUnmarshalBinary(t *testing.T) {
 					Dst:      net.IPv4(10, 0, 0, 0),
 					Src:      net.IPv4(10, 100, 10, 1),
 					Gateway:  net.IPv4(10, 0, 0, 1),
-					OutIface: 5,
-					Priority: 1,
-					Table:    2,
-					Mark:     3,
+					OutIface: &out,
+					Priority: &prio,
+					Table:    &table,
+					Mark:     &mark,
 					Pref:     &pref,
 					Expires:  &timeout,
 					Metrics: &RouteMetrics{
